@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   std::pair<float, float> drop_off = std::make_pair(5.0, 1.0);
 
   // Create a cube marker
-  auto marker = create_marker();
+  auto marker = create_marker(0);
   // Publish the marker
   while (marker_pub.getNumSubscribers() < 1) {
     if (!ros::ok()) {
