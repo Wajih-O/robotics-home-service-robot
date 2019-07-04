@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
   // setup goals as tuple of  position.x, position.y
   std::vector<std::pair<float, float>> goals_to_reach{std::make_pair(-1.0, -6.0),
-                                                      std::make_pair(5.0, 1.0)};
+                                                      std::make_pair(-3.0, 0.0)};
 
   move_base_msgs::MoveBaseGoal goal;
 
