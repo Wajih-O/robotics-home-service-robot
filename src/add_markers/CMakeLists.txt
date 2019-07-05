@@ -10,6 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   visualization_msgs
+  std_msgs message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,11 +47,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  pick_object_mission.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +67,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   visualization_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  visualization_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES add_markers
-#  CATKIN_DEPENDS roscpp visualization_msgs
+CATKIN_DEPENDS message_runtime # roscpp visualization_msgs
 #  DEPENDS system_lib
 )
 
@@ -150,16 +151,13 @@ include_directories(
 # )
 
 add_executable(add_markers src/add_markers.cpp)
-add_dependencies(add_markers nav_msgs_generate_messages_cpp)
+add_dependencies(add_markers nav_msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(add_markers ${catkin_LIBRARIES})
 
 add_executable(simulated_add_markers src/simulated_add_markers.cpp)
 add_dependencies(simulated_add_markers nav_msgs_generate_messages_cpp)
 target_link_libraries(simulated_add_markers ${catkin_LIBRARIES})
 
-
-add_executable(markers_cycle src/markers_cycle.cpp)
-target_link_libraries(markers_cycle ${catkin_LIBRARIES})
 
 #############
 ## Install ##

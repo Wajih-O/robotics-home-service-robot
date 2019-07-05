@@ -1,0 +1,4 @@
+float32 pick_up_x
+float32 pick_up_y
+float32 drop_off_x
+float32 drop_off_y

@@ -19,6 +19,7 @@
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <add_markers/pick_object_mission.h>
 
 enum class RobotState { START, LOADED, UNLOADED };
 
@@ -85,6 +86,7 @@ public:
     robot_state = RobotState::START; // initialize the state of the robot
     marker_pub = node_handle.advertise<visualization_msgs::Marker>(
         "visualization_marker", 5);
+    pick_object_mission_pub = node_handle.advertise<add_markers::pick_object_mission>("pick_object_missions", 100);
     odom_subscriber = node_handle.subscribe(
         "odom", 1000, &PickUpDropOffHomeService::pickup_dropoff, this);
 
@@ -113,6 +115,23 @@ public:
     marker_pub.publish(origin_marker);
     marker_pub.publish(pick_up_marker);
     marker_pub.publish(drop_off_marker);
+
+    // create mission message
+    while (pick_object_mission_pub.getNumSubscribers() < 1) {
+      if (!ros::ok()) {
+        return;
+      }
+      ROS_WARN_ONCE("waiting for pick object missions subscriber");
+      sleep(1);
+    }
+    add_markers::pick_object_mission mission_msg;
+    mission_msg.pick_up_x = pick_up_position.first;
+    mission_msg.pick_up_y = pick_up_position.second;
+    mission_msg.drop_off_x = drop_off_position.first;
+    mission_msg.drop_off_y = drop_off_position.second;
+
+    pick_object_mission_pub.publish(mission_msg);
+
   }
 
   void pick_up() {
@@ -124,7 +143,7 @@ public:
   }
 
   void drop_off() {
-    pin_marker(this->marker, std::make_pair(0.0, 0.0));
+    pin_marker(this->marker, std::make_pair(0.6, 0.0));
     this->marker_pub.publish(this->marker);
     robot_state = RobotState::UNLOADED; // update robot state
   }
@@ -157,8 +176,7 @@ public:
       if (is_close_enough(std::make_pair(msg->pose.pose.position.x,
                                          msg->pose.pose.position.y),
                           absolute_goal) &&
-          !is_moving(msg->twist.twist.linear.x, msg->twist.twist.linear.y,
-                     msg->twist.twist.angular.z)) {
+          !is_moving(msg->twist.twist.linear.x, msg->twist.twist.linear.y, 0)) {
         ROS_INFO("Reached drop off Position -> x: [%f], y: [%f]  unloading ...",
                  msg->pose.pose.position.x, msg->pose.pose.position.y);
         drop_off();
@@ -174,6 +192,8 @@ private:
   std::pair<float, float> drop_off_position;
   //  NodeHandle
   ros::NodeHandle node_handle;
+  // mission publisher
+  ros::Publisher pick_object_mission_pub;
   // marker publisher
   ros::Publisher marker_pub;
   RobotState robot_state;
